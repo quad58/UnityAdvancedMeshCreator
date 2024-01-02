@@ -2,6 +2,7 @@ using System.Threading;
 using AdvancedMeshCreator;
 using UnityEngine;
 using Unity.Mathematics;
+using UnityEngine.UI;
 
 public class Demo : MonoBehaviour
 {
@@ -9,36 +10,50 @@ public class Demo : MonoBehaviour
 
     private MeshData MeshData;
 
+    private string ProgressMessage;
+    private int Progress;
+    private int MaxProgress;
+    private bool ShowProgress = true;
+
+    public const int PointsInRow = 2048;
+    public const float PointSize = 0.5f;
+
+    [SerializeField] private Text ProgressText;
+ 
     private void Start()
     {
         Thread thread = new Thread(() =>
         {
-            const int pointsInRow = 64;
-            const float pointSize = 0.5f;
+            Vector3[] vertices = new Vector3[PointsInRow * PointsInRow];
+            int[] triangles = new int[PointsInRow * PointsInRow * 6];
 
-            Vector3[] vertices = new Vector3[pointsInRow * pointsInRow];
-            int[] triangles = new int[pointsInRow * pointsInRow * 6];
+            ProgressMessage = "Generating vertices";
+            MaxProgress = vertices.Length;
 
-            for (int i = 0, x = 0; x < pointsInRow; x++)
+            for (int i = 0, x = 0; x < PointsInRow; x++)
             {
-                for (int z = 0; z < pointsInRow; z++)
+                for (int z = 0; z < PointsInRow; z++)
                 {
-                    vertices[i] = new Vector3(x * pointSize, noise.cnoise(new float2(x, z) / 20) * 5, z * pointSize);
+                    vertices[i] = new Vector3(x * PointSize, noise.cnoise(new float2(x, z) / 20) * 5, z * PointSize);
+
+                    Progress++;
 
                     i++;
                 }
             }
 
-            for (int vert = 0, tris = 0, x = 0; x < pointsInRow - 1; x++)
+            for (int vert = 0, tris = 0, x = 0; x < PointsInRow - 1; x++)
             {
-                for (int y = 0; y < pointsInRow - 1; y++)
+                for (int y = 0; y < PointsInRow - 1; y++)
                 {
                     triangles[tris + 0] = vert;
                     triangles[tris + 1] = vert + 1;
-                    triangles[tris + 2] = pointsInRow + vert;
-                    triangles[tris + 3] = pointsInRow + vert;
+                    triangles[tris + 2] = PointsInRow + vert;
+                    triangles[tris + 3] = PointsInRow + vert;
                     triangles[tris + 4] = vert + 1;
-                    triangles[tris + 5] = pointsInRow + vert + 1;
+                    triangles[tris + 5] = PointsInRow + vert + 1;
+
+                    Progress++;
 
                     vert++;
                     tris += 6;
@@ -47,6 +62,8 @@ public class Demo : MonoBehaviour
                 vert++;
             }
 
+            ShowProgress = false;
+            ProgressMessage = "Calculating mesh";
             MeshData = new MeshData(vertices, triangles); // Calculate Mesh
 
             NeedUpdate = true;
@@ -62,6 +79,17 @@ public class Demo : MonoBehaviour
             NeedUpdate = false;
 
             CreateMesh();
+
+            ProgressText.gameObject.SetActive(false);
+        }
+
+        if (ShowProgress)
+        {
+            ProgressText.text = $"{ProgressMessage} {Progress}/{MaxProgress}";
+        }
+        else
+        {
+            ProgressText.text = $"{ProgressMessage}";
         }
     }
 
