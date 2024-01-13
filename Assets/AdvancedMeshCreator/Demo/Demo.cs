@@ -18,6 +18,7 @@ public class Demo : MonoBehaviour
     public const int PointsInRow = 2048;
     public const float PointSize = 0.5f;
 
+    [SerializeField] private Image ProgressVizualizer;
     [SerializeField] private Text ProgressText;
  
     private void Start()
@@ -91,6 +92,8 @@ public class Demo : MonoBehaviour
         {
             ProgressText.text = $"{ProgressMessage}";
         }
+
+        ProgressVizualizer.rectTransform.eulerAngles += new Vector3(0, 0, Time.deltaTime * 100);
     }
 
     private void CreateMesh()
