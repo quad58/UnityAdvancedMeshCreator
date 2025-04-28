@@ -6,8 +6,8 @@ Go to [Releases](https://github.com/quad58/UnityAdvancedMeshCreator/releases) an
 
 ## Usage
 ```csharp
-// This you can put in to other thread.
+// You can put this in other thread.
 MeshData meshData = new MeshData(verticies, triangles, normals, tangents, colors, uv);
-// This in main thread.
+// This you can put in main thread.
 Mesh mesh = MeshCreator.CreateMesh(meshData);
 ```
